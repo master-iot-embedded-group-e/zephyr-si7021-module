@@ -153,6 +153,12 @@ static int si7021_init(const struct device *dev) {
   return si7021_who_am_i(dev);
 }
 
+// drivers/haptics/cirrus/cs40l5x.c
+static int __maybe_unused si7021_deinit(const struct device *dev) {
+  ARG_UNUSED(dev);
+  return 0;
+}
+
 #define SI7021_INIT(i)                                                         \
   static struct si7021_data si7021_data_##i;                                   \
                                                                                \
@@ -160,8 +166,10 @@ static int si7021_init(const struct device *dev) {
       .i2c = I2C_DT_SPEC_INST_GET(i),                                          \
   };                                                                           \
                                                                                \
-  SENSOR_DEVICE_DT_INST_DEFINE(i, si7021_init, NULL, &si7021_data_##i,         \
-                               &si7021_config_##i, POST_KERNEL,                \
-                               CONFIG_SENSOR_INIT_PRIORITY, &si7021_api);
+  DEVICE_DT_INST_DEINIT_DEFINE(i, si7021_init, si7021_deinit, NULL,            \
+                               &si7021_data_##i, &si7021_config_##i,           \
+                               POST_KERNEL, CONFIG_SENSOR_INIT_PRIORITY,       \
+                               &si7021_api);                                   \
+  SENSOR_INFO_DT_DEFINE(DT_DRV_INST(i));
 
 DT_INST_FOREACH_STATUS_OKAY(SI7021_INIT)
